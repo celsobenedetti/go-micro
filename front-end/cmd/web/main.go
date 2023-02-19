@@ -14,8 +14,7 @@ func main() {
 		render(w, "test.page.gohtml")
 	})
 
-
-    port := fmt.Sprintf(":%s", webPort)
+	port := fmt.Sprintf(":%s", webPort)
 	fmt.Printf("Starting front end service on port %s\n", port)
 	err := http.ListenAndServe(port, nil)
 	if err != nil {
@@ -41,7 +40,7 @@ func render(w http.ResponseWriter, t string) {
 	tmpl, err := template.ParseFiles(templateSlice...)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		
+
 	}
 
 	if err := tmpl.Execute(w, nil); err != nil {
