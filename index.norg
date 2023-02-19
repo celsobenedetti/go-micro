@@ -1,0 +1,21 @@
+* Working with Microsservices with Go
+
+  - The purpose of this project is to explore the concepts of microsservices implemented in the Go environment 
+  - With tools like Docker and Kubernetes, microsservices provide a more scalable and maintainable model for the development of systems
+    
+** What we'll build
+
+   A front-end web application that connects to 5 different microsservices:
+
+   - *Broker* - optional single point of entry to micro services
+   - *Authentication* - Postgres
+   - *Logger* - MongoDB
+   - *Mail* - sends emails with specific template
+   - *Listener* - consumes messages in RabbitMQ and initiates a process
+
+   We'll comunicate between microsservices using:
+
+   - *REST* API w/ *JSON* as transport
+   - Sending and receiving using *RPC*
+   - Sending and receiving using *gRPC*
+   - Initiating and responding to events using *AMQP* (Advanced messaged queuing protocol)
