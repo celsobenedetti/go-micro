@@ -1,21 +1,29 @@
-# base go image
-FROM golang:1.18-alpine as builder
+# base go image, used to build executable
+# not needed since makefile can create binary if system has go installed
 
-RUN mkdir /app
+# FROM golang:1.18-alpine as builder
+#
+# RUN mkdir /app
+#
+# COPY . /app
+#
+# WORKDIR /app
+#
+# RUN CGO_ENABLED=0 go build -o brokerApp ./cmd/api
+#
+# RUN chmod +x /app/brokerApp
 
-COPY . /app
 
-WORKDIR /app
-
-RUN CGO_ENABLED=0 go build -o broker-app ./cmd/api
-
-RUN chmod +x /app/broker-app
-
-# build a tiny docker image
+# actual app running image
+# build a tiny docker image, copy binary and run
 FROM alpine:latest
 
 RUN mkdir /app
 
-COPY --from=builder /app/broker-app /app
+# example: copy binary build by 'builder' image
+# COPY --from=builder /app/brokerApp /app 
 
-CMD [ "/app/broker-app" ]
+# copy binary build by Makefile (much faster)
+COPY brokerApp /app 
+
+CMD [ "/app/brokerApp" ]
