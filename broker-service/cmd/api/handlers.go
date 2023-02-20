@@ -2,13 +2,17 @@ package main
 
 import (
 	"net/http"
+
+	"github.com/celso-patiri/go-micro/helpers"
 )
 
 func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
-	payload := jsonResponse{
+	tools := helpers.Tools{}
+
+	payload := helpers.JSONResponse{
 		Error:   false,
 		Message: "Hello from Broker",
 	}
 
-    _ = app.writeJSON(w, http.StatusOK, payload)
+	_ = tools.WriteJSON(w, http.StatusOK, payload)
 }

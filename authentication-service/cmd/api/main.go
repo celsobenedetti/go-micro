@@ -12,7 +12,7 @@ import (
 	_ "github.com/jackc/pgx/v4"
 	_ "github.com/jackc/pgx/v4/stdlib"
 
-	"github.com/celso-patiri/celso-patiri/go-micro/authentication/data"
+	"github.com/celso-patiri/go-micro/authentication/data"
 )
 
 const webPort = "80"
