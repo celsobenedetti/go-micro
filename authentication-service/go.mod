@@ -3,6 +3,7 @@ module github.com/celso-patiri/go-micro/authentication
 go 1.19
 
 require (
+	github.com/celso-patiri/go-micro/helpers v0.0.0-20230220231013-264a87f2dcf9
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/cors v1.2.1
 	github.com/jackc/pgconn v1.14.0
@@ -19,3 +20,5 @@ require (
 	github.com/jackc/pgtype v1.14.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 )
+
+replace github.com/celso-patiri/go-micro/helpers => ../helpers/

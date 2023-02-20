@@ -15,9 +15,10 @@ import (
 	"github.com/celso-patiri/go-micro/authentication/data"
 )
 
-const webPort = "80"
-
-var connectionTries int
+const (
+	webPort  = "80"
+	maxConnectionTries = 10
+)
 
 type Config struct {
 	DB     *sql.DB
@@ -27,7 +28,6 @@ type Config struct {
 func main() {
 	log.Println("Starting authentication service")
 
-	//TODO: connect to db
 	conn := connectToDb()
 	if conn == nil {
 		log.Panic("Can't connect to Postgres")
@@ -69,6 +69,8 @@ func openDB(dsn string) (*sql.DB, error) {
 func connectToDb() *sql.DB {
 	dsn := os.Getenv("DSN")
 
+	connectionTries := 0
+
 	for {
 		connection, err := openDB(dsn)
 		if err != nil {
@@ -79,7 +81,7 @@ func connectToDb() *sql.DB {
 			return connection
 		}
 
-		if connectionTries > 10 {
+		if connectionTries > maxConnectionTries {
 			log.Println(err)
 			return nil
 		}
