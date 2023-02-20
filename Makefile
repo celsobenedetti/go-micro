@@ -2,6 +2,7 @@
 
 FRONT_END_BINARY=frontApp
 BROKER_BINARY=brokerApp
+AUTH_BINARY=authApp
 
 ##
 up:
@@ -12,8 +13,8 @@ up:
 UP_DESC="up: starts all containers in the background without forcing build"
 
 ##
-up_build: build_broker
-	@echo "Stopping docker images (if running...)"
+up_build: build_broker build_auth
+	@echo "Stopping any running Docker containers"
 	docker-compose down
 	@echo "Building (when required) and starting docker images..."
 	docker-compose up --build -d
@@ -36,6 +37,14 @@ build_broker:
 	@echo "Done!"
 
 BUILD_BROKER_DESC="build_broker: builds the broker binary as a linux executable"
+
+##
+build_auth:
+	@echo "Building auth service binary..."
+	cd ./authentication-service && env GOOS=linux CGO_ENABLED=0 go build -o ${AUTH_BINARY} ./cmd/api
+	@echo "Done!"
+
+BUILD_AUTH_DESC="build_auth: builds the auth service binary as a linux executable"
 
 ##
 build_front:
@@ -67,6 +76,7 @@ help:
 	@echo "\t${UPBUILD_DESC}"
 	@echo "\t${DOWN_DESC}"
 	@echo "\t${BUILD_BROKER_DESC}"
+	@echo "\t${BUILD_AUTH_DESC}"
 	@echo "\t${BUILD_FRONT_DESC}"
 	@echo "\t${START_DESC}"
 	@echo "\t${STOP_DESC}"

@@ -1,0 +1,5 @@
+# database volumes
+db-data/
+
+# created binaries
+**/*App
