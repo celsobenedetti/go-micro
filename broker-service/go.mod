@@ -7,6 +7,6 @@ require (
 	github.com/go-chi/cors v1.2.1
 )
 
-require github.com/celso-patiri/go-micro/helpers v0.0.0-20230220231013-264a87f2dcf9 // indirect
+require github.com/celso-patiri/go-micro/helpers v0.0.0-20230220231013-264a87f2dcf9
 
 replace github.com/celso-patiri/go-micro/helpers => ../helpers/
