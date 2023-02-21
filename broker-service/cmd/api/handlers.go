@@ -14,11 +14,17 @@ var tools = helpers.Tools{}
 type RequestPayload struct {
 	Action string      `json:"action"`
 	Auth   AuthPayload `json:"auth,omitempty"`
+	Log    LogPayload  `json:"log,omitempty"`
 }
 
 type AuthPayload struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type LogPayload struct {
+	Name string `json:"name"`
+	Data string `json:"data"`
 }
 
 func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
@@ -44,6 +50,8 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	switch RequestPayload.Action {
 	case "auth":
 		app.authenticate(w, RequestPayload.Auth)
+	case "log":
+		app.logItem(w, RequestPayload.Log)
 	default:
 		tools.ErrorJSON(w, errors.New("Unknown action"))
 	}
@@ -55,7 +63,7 @@ func (app *Config) authenticate(w http.ResponseWriter, reqPayload AuthPayload) {
 	jsonData, _ := json.MarshalIndent(reqPayload, "", "\t")
 
 	//call service
-	req, err := http.NewRequest(http.MethodPost, "http://authentication-service/authenticate", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest(http.MethodPost, authenticateUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
 		tools.ErrorJSON(w, err)
 		return
@@ -102,3 +110,39 @@ func (app *Config) authenticate(w http.ResponseWriter, reqPayload AuthPayload) {
 
 	tools.WriteJSON(w, http.StatusAccepted, resPayload)
 }
+
+func (app *Config) logItem(w http.ResponseWriter, reqPayload LogPayload) {
+	jsonData, _ := json.MarshalIndent(reqPayload, "", "\t")
+
+	// call the service
+    req, err := http.NewRequest("POST", logUrl, bytes.NewBuffer(jsonData))
+    if err != nil {
+        tools.ErrorJSON(w, err)
+    }
+
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+
+    res, err := client.Do(req)
+    if err != nil {
+        tools.ErrorJSON(w, err)
+    }
+    defer res.Body.Close()
+
+    if res.StatusCode != http.StatusAccepted {
+        tools.ErrorJSON(w, err)
+    }
+
+    resPayload := helpers.JSONResponse{
+        Error: false,
+        Message: "logged",
+    }
+
+    tools.WriteJSON(w, http.StatusAccepted, resPayload)
+}
+
+const (
+	authenticateUrl = "http://authentication-service/authenticate"
+	logUrl          = "http://logger-service/log"
+)
