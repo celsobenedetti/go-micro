@@ -19,3 +19,41 @@
    - Sending and receiving using *RPC*
    - Sending and receiving using *gRPC*
    - Initiating and responding to events using *AMQP* (Advanced messaged queuing protocol)
+
+** Structure
+
+   Each service contains a _minimal_ *Dockerfile* to simply run the respective generated Go binary
+
+   The Go binaries are built through *Makefile* scripts, which specify the `go build` directives for each service
+
+   The root level *docker-compose.yml* instanciates each backend service through their respective Dockerfile images, as well as their associated database
+
+   - authentication-service  < - >  PostgreSQL
+   - logger-service          < - >  MongoDB
+
+   The _front-end_ is a separate Go application which serves a simple web page that allows for communication to each of the backend services
+
+   - All services expose a *GET /ping* route for healthcheck
+
+*** authentication-service 
+
+    The auth-service exposes a REST API which allows user authentication
+
+    - The Postgres database contains only the *Users* table, whose model is defined in `/data/user.go`
+
+**** Routes:
+     - *POST* `/authenticate`
+     - `email` string
+     - `password` string
+    
+*** logger-service
+
+    The logger-service uses MongoDB to log data around the usage of other services
+
+    - All logs are stored in a `logs` collection
+    . The service is not exposed through a port outside the swarm, it is only accessed by other services
+
+**** Routes:
+     - *POST* `/log`
+     - `name` string
+     - `data` any

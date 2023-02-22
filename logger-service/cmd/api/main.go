@@ -10,6 +10,7 @@ import (
 	"github.com/celso-patiri/go-micro/logger/data"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 const (
@@ -31,7 +32,6 @@ func main() {
 	if err != nil {
 		log.Panic("Failed to connect to Mongo: ", err)
 	}
-
 	client = mongoClient
 
 	//create a context in order to disconnect
@@ -45,12 +45,18 @@ func main() {
 		}
 	}()
 
+    // Ping the primary
+	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
+		panic(err)
+	}
+	fmt.Println("Successfully connected and pinged Mongo")
+
 	app := Config{
-		Models: data.New(mongoClient),
+		Models: data.New(client),
 	}
 
-    //start web server
-    app.Serve()
+	//start web server
+	app.Serve()
 }
 
 func (app *Config) Serve() {
@@ -66,10 +72,9 @@ func (app *Config) Serve() {
 }
 
 func connectToMongo() (*mongo.Client, error) {
-	//create connection options``
+	//create connection options
 	clientOptions := options.Client().ApplyURI(mongoURL)
 	clientOptions.SetAuth(options.Credential{
-		//FIX: et credentials from env or cli args
 		Username: "admin",
 		Password: "password",
 	})
