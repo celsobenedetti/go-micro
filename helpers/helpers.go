@@ -18,8 +18,8 @@ type JSONResponse struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-// ReadJSON tries to read the body of a request and converts it into JSON.
-func (t *Tools) ReadJSON(w http.ResponseWriter, r http.Request, data any) error {
+// ReadJSON tries to read the body of a request, convert it into JSON and write into 'data'
+func (t *Tools) ReadJSON(w http.ResponseWriter, r *http.Request, data any) error {
 	maxBytes := 1048576 // one MB
 
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))

@@ -19,7 +19,7 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password"`
 	}
 
-	err := tools.ReadJSON(w, *r, &requestPayload)
+	err := tools.ReadJSON(w, r, &requestPayload)
 	if err != nil {
 		tools.ErrorJSON(w, err, http.StatusBadRequest)
 		return
@@ -38,7 +38,7 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// log authentication
+	// log authentication event
 	err = app.logRequest("authentication", fmt.Sprintf("%.v - %s logged in", time.Now(), user.Email))
     if err != nil {
         tools.ErrorJSON(w, err)

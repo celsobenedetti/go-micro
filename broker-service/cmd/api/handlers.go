@@ -41,7 +41,7 @@ func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
 func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	var RequestPayload RequestPayload
 
-	err := tools.ReadJSON(w, *r, &RequestPayload)
+	err := tools.ReadJSON(w, r, &RequestPayload)
 	if err != nil {
 		tools.ErrorJSON(w, err)
 		return
