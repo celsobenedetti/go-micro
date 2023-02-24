@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	webPort  = "80"
+	webPort            = "80"
 	maxConnectionTries = 10
 )
 
@@ -52,7 +52,6 @@ func main() {
 
 func openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("pgx", dsn)
-
 	if err != nil {
 		return nil, err
 	}

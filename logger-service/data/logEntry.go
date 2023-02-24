@@ -28,7 +28,6 @@ func (l *LogEntry) Insert(entry LogEntry) error {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	})
-
 	if err != nil {
 		log.Println("Error inserting into 'logs' collection: ", err)
 		return err
@@ -38,7 +37,7 @@ func (l *LogEntry) Insert(entry LogEntry) error {
 }
 
 func (l *LogEntry) All() ([]*LogEntry, error) {
-	//close context after 15 seconds
+	// close context after 15 seconds
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
@@ -48,7 +47,6 @@ func (l *LogEntry) All() ([]*LogEntry, error) {
 	opts.SetSort(bson.D{{"created_at", -1}})
 
 	cursor, err := collection.Find(context.TODO(), bson.D{}, opts)
-
 	if err != nil {
 		log.Println("Error finding all in collection 'logs': ", err)
 	}
@@ -124,7 +122,6 @@ func (l *LogEntry) Update() (*mongo.UpdateResult, error) {
 				{"updated_at", time.Now()},
 			}},
 		})
-
 	if err != nil {
 		return nil, err
 	}

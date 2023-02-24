@@ -25,5 +25,3 @@ func New(dbPool *sql.DB) Models {
 type Models struct {
 	User User
 }
-
-

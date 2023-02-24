@@ -9,7 +9,7 @@ import (
 
 // Tools is the type for this package. Create a variable of this type, and you have access
 // to all the exported methods with the receiver type *Tools.
-type Tools struct {}
+type Tools struct{}
 
 // JSONResponse is the type used for sending JSON around.
 type JSONResponse struct {

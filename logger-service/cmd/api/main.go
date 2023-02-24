@@ -27,25 +27,25 @@ type Config struct {
 }
 
 func main() {
-	//connect to mongo
+	// connect to mongo
 	mongoClient, err := connectToMongo()
 	if err != nil {
 		log.Panic("Failed to connect to Mongo: ", err)
 	}
 	client = mongoClient
 
-	//create a context in order to disconnect
+	// create a context in order to disconnect
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	//close connection
+	// close connection
 	defer func() {
 		if err = client.Disconnect(ctx); err != nil {
 			panic(err)
 		}
 	}()
 
-    // Ping the primary
+	// Ping the primary
 	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
 		panic(err)
 	}
@@ -55,7 +55,7 @@ func main() {
 		Models: data.New(client),
 	}
 
-	//start web server
+	// start web server
 	app.Serve()
 }
 
@@ -72,14 +72,14 @@ func (app *Config) Serve() {
 }
 
 func connectToMongo() (*mongo.Client, error) {
-	//create connection options
+	// create connection options
 	clientOptions := options.Client().ApplyURI(mongoURL)
 	clientOptions.SetAuth(options.Credential{
 		Username: "admin",
 		Password: "password",
 	})
 
-	//connect
+	// connect
 	c, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Println("Error connecting to Mongo: ", err)

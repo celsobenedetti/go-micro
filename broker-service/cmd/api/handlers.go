@@ -55,14 +55,13 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	default:
 		tools.ErrorJSON(w, errors.New("Unknown action"))
 	}
-
 }
 
 func (app *Config) authenticate(w http.ResponseWriter, reqPayload AuthPayload) {
-	//create some json well send to the auth microservice
+	// create some json well send to the auth microservice
 	jsonData, _ := json.MarshalIndent(reqPayload, "", "\t")
 
-	//call service
+	// call service
 	req, err := http.NewRequest(http.MethodPost, authenticateUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
 		tools.ErrorJSON(w, err)
@@ -71,14 +70,13 @@ func (app *Config) authenticate(w http.ResponseWriter, reqPayload AuthPayload) {
 
 	client := &http.Client{}
 	res, err := client.Do(req)
-
 	if err != nil {
 		tools.ErrorJSON(w, err)
 		return
 	}
 	defer res.Body.Close()
 
-	//make sure we get back the correct statuscode
+	// make sure we get back the correct statuscode
 	if res.StatusCode == http.StatusUnauthorized {
 		tools.ErrorJSON(w, errors.New("Invalid credentials"))
 		return
@@ -87,17 +85,17 @@ func (app *Config) authenticate(w http.ResponseWriter, reqPayload AuthPayload) {
 		return
 	}
 
-	//create a variable we'll read res.Body into
+	// create a variable we'll read res.Body into
 	var jsonFromService helpers.JSONResponse
 
-	//decode the json from auth service
+	// decode the json from auth service
 	err = json.NewDecoder(res.Body).Decode(&jsonFromService)
 	if err != nil {
 		tools.ErrorJSON(w, err)
 		return
 	}
 
-	//auth service returned StatusUnauthorized
+	// auth service returned StatusUnauthorized
 	if jsonFromService.Error {
 		tools.ErrorJSON(w, err, http.StatusUnauthorized)
 	}
@@ -115,31 +113,31 @@ func (app *Config) logItem(w http.ResponseWriter, reqPayload LogPayload) {
 	jsonData, _ := json.MarshalIndent(reqPayload, "", "\t")
 
 	// call the service
-    req, err := http.NewRequest("POST", logUrl, bytes.NewBuffer(jsonData))
-    if err != nil {
-        tools.ErrorJSON(w, err)
-    }
+	req, err := http.NewRequest("POST", logUrl, bytes.NewBuffer(jsonData))
+	if err != nil {
+		tools.ErrorJSON(w, err)
+	}
 
-    req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 
-    client := &http.Client{}
+	client := &http.Client{}
 
-    res, err := client.Do(req)
-    if err != nil {
-        tools.ErrorJSON(w, err)
-    }
-    defer res.Body.Close()
+	res, err := client.Do(req)
+	if err != nil {
+		tools.ErrorJSON(w, err)
+	}
+	defer res.Body.Close()
 
-    if res.StatusCode != http.StatusAccepted {
-        tools.ErrorJSON(w, err)
-    }
+	if res.StatusCode != http.StatusAccepted {
+		tools.ErrorJSON(w, err)
+	}
 
-    resPayload := helpers.JSONResponse{
-        Error: false,
-        Message: "logged",
-    }
+	resPayload := helpers.JSONResponse{
+		Error:   false,
+		Message: "logged",
+	}
 
-    tools.WriteJSON(w, http.StatusAccepted, resPayload)
+	tools.WriteJSON(w, http.StatusAccepted, resPayload)
 }
 
 const (

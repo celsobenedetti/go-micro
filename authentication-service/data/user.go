@@ -80,7 +80,6 @@ func (u *User) GetByEmail(email string) (*User, error) {
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +107,6 @@ func (u *User) GetOne(id int) (*User, error) {
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +137,6 @@ func (u *User) Update() error {
 		time.Now(),
 		u.ID,
 	)
-
 	if err != nil {
 		return err
 	}

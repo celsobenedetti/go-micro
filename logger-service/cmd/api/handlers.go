@@ -17,12 +17,11 @@ type JSONPayload struct {
 var tools = helpers.Tools{}
 
 func (app *Config) WriteLog(w http.ResponseWriter, r *http.Request) {
-
-	//read json into var
+	// read json into var
 	var requestPayload JSONPayload
 	_ = tools.ReadJSON(w, r, &requestPayload)
 
-	//insert data
+	// insert data
 	event := data.LogEntry{
 		Name:      requestPayload.name,
 		Data:      requestPayload.data,

@@ -23,7 +23,6 @@ func main() {
 }
 
 func render(w http.ResponseWriter, t string) {
-
 	partials := []string{
 		"./cmd/web/templates/base.layout.gohtml",
 		"./cmd/web/templates/header.partial.gohtml",
@@ -40,7 +39,6 @@ func render(w http.ResponseWriter, t string) {
 	tmpl, err := template.ParseFiles(templateSlice...)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-
 	}
 
 	if err := tmpl.Execute(w, nil); err != nil {
