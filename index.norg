@@ -57,3 +57,8 @@
      - *POST* `/log`
      - `name` string
      - `data` any
+
+*** Mail Service
+
+    The mail service should not be exposed in the open internet. We want it to be protected inside the swarm/cluster
+

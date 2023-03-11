@@ -36,6 +36,26 @@ services:
     ports:
       - "8082:80"
 
+  mail-service:
+    build:
+      context: ./mail-service
+      dockerfile: ./mail-service.Dockerfile
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    ports:
+      - "8083:80"
+    environment:
+      MAIL_DOMAIN: "localhost"
+      MAIL_HOST: "mailhog"
+      MAIL_PORT: "1025"
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_ENCRYPTION: "none"
+      FROM_NAME: "John Smith"
+      FROM_ADDRESS: "john.smith@email.com"
+
   postgres:
     image: postgres:14.2
     ports:
@@ -57,7 +77,13 @@ services:
       - "27017:27017"
     environment:
       MONGO_INITDB_DATABASE: logs
-      MONGO_INITDB_ROOT_USERNAME: admin # TODO: get credentails from env 
+      MONGO_INITDB_ROOT_USERNAME: admin # TODO: get credentails from env
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - $HOME/dbvolumes/go-micro/db-data/mongo:/data/db
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
