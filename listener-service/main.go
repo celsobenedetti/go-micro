@@ -4,21 +4,12 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"net/http"
 	"os"
 	"time"
 
+	"github.com/celso-patiri/go-micro/listener/event"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
-
-const (
-	webPort          = "80"
-	rabbitmqMaxTries = 5
-)
-
-type Config struct {
-	Rabbit *amqp.Connection
-}
 
 func main() {
 	// try to connet to RabbitMQ
@@ -28,22 +19,21 @@ func main() {
 		os.Exit(1)
 	}
 	defer rabbitConn.Close()
-	log.Println("broker-service: Connected to RabbitMQ")
+	log.Println("listener-service: Connected to RabbitMQ")
 
-	app := Config{
-        Rabbit: rabbitConn,
-    }
+	// start listening for messages
+	log.Println("Listening for and consuming RabbitMQ messages...")
 
-	log.Printf("Starting broker service at port %s\n", webPort)
-
-	server := &http.Server{
-		Addr:    fmt.Sprintf(":%s", webPort),
-		Handler: app.routes(),
+	// create consumer
+	consumer, err := event.NewConsumer(rabbitConn)
+	if err != nil {
+		panic(err)
 	}
 
-	err = server.ListenAndServe()
+	// watch the queue and consume events
+	err = consumer.Listen([]string{"log.INFO", "log.WARNING", "log.ERROR"})
 	if err != nil {
-		log.Panic(err)
+        log.Println(err)
 	}
 }
 
@@ -65,7 +55,7 @@ func connect() (*amqp.Connection, error) {
 			return connection, nil
 		}
 
-		if counts > rabbitmqMaxTries {
+		if counts > max_counts {
 			fmt.Println(err)
 			return nil, err
 		}
@@ -74,3 +64,7 @@ func connect() (*amqp.Connection, error) {
 		time.Sleep(backoff)
 	}
 }
+
+const (
+	max_counts = 5
+)

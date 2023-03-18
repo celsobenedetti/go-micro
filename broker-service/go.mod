@@ -9,4 +9,6 @@ require (
 
 require github.com/celso-patiri/go-micro/helpers v0.0.0-20230220231013-264a87f2dcf9
 
+require github.com/rabbitmq/amqp091-go v1.7.0 // indirect
+
 replace github.com/celso-patiri/go-micro/helpers => ../helpers/

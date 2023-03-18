@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/celso-patiri/go-micro/broker/event"
 	"github.com/celso-patiri/go-micro/helpers"
 )
 
@@ -59,7 +60,7 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	case "auth":
 		app.authenticate(w, RequestPayload.Auth)
 	case "log":
-		app.logItem(w, RequestPayload.Log)
+		app.logEventViaRabbit(w, RequestPayload.Log)
 	case "mail":
 		app.sendMail(w, RequestPayload.Mail)
 	default:
@@ -123,7 +124,7 @@ func (app *Config) logItem(w http.ResponseWriter, reqPayload LogPayload) {
 	jsonData, _ := json.MarshalIndent(reqPayload, "", "\t")
 
 	// call the service
-	req, err := http.NewRequest("POST", logUrl, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", loggerServiceUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
 		tools.ErrorJSON(w, err)
 	}
@@ -153,42 +154,75 @@ func (app *Config) logItem(w http.ResponseWriter, reqPayload LogPayload) {
 func (app *Config) sendMail(w http.ResponseWriter, msg MailPayload) {
 	jsonData, _ := json.MarshalIndent(msg, "", "\t")
 
-    //call the mail service
-    mailServiceUrl := "http://mail-service/send"
-    
-    //post to mail service
-    req, err := http.NewRequest(http.MethodPost, mailServiceUrl, bytes.NewBuffer(jsonData))
-    if err != nil {
-        tools.ErrorJSON(w, err)
-        return
-    }
+	// call the mail service
+	mailServiceUrl := "http://mail-service/send"
 
-    req.Header.Set("Content-Type", "application/json")
+	// post to mail service
+	req, err := http.NewRequest(http.MethodPost, mailServiceUrl, bytes.NewBuffer(jsonData))
+	if err != nil {
+		tools.ErrorJSON(w, err)
+		return
+	}
 
-    client := &http.Client{}
-    res, err := client.Do(req)
-    if err != nil {
-        tools.ErrorJSON(w, err)
-        return
-    }
-    defer res.Body.Close()
+	req.Header.Set("Content-Type", "application/json")
 
-    //make sure we get back the right status code
-    if res.StatusCode != http.StatusAccepted {
-        tools.ErrorJSON(w, errors.New("Error calling mail service"))
-        return
-    }
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		tools.ErrorJSON(w, err)
+		return
+	}
+	defer res.Body.Close()
 
-    //send back json response
-    var payload helpers.JSONResponse
-    payload.Error = false
-    payload.Message = "Message sent to " + msg.To
+	// make sure we get back the right status code
+	if res.StatusCode != http.StatusAccepted {
+		tools.ErrorJSON(w, errors.New("Error calling mail service"))
+		return
+	}
 
-    tools.WriteJSON(w, http.StatusAccepted, payload)
+	// send back json response
+	var payload helpers.JSONResponse
+	payload.Error = false
+	payload.Message = "Message sent to " + msg.To
+
+	tools.WriteJSON(w, http.StatusAccepted, payload)
 }
 
+func (app *Config) logEventViaRabbit(w http.ResponseWriter, l LogPayload) {
+	err := app.pushToQueue(l.Name, l.Data)
+	if err != nil {
+		tools.ErrorJSON(w, err)
+		return
+	}
+
+	var payload helpers.JSONResponse
+	payload.Error = false
+	payload.Message = "Logged via RabbitMQ"
+
+	tools.WriteJSON(w, http.StatusAccepted, payload)
+}
+
+func (app *Config) pushToQueue(name, msg string) error {
+	emitter, err := event.NewEventEmitter(app.Rabbit)
+	if err != nil {
+		return err
+	}
+
+	payload := LogPayload{
+		Name: name,
+		Data: msg,
+	}
+
+	j, _ := json.MarshalIndent(&payload, "", "\t")
+	err = emitter.Push(string(j), "log.INFO")
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 const (
-	authenticateUrl = "http://authentication-service/authenticate"
-	logUrl          = "http://logger-service/log"
+	authenticateUrl  = "http://authentication-service/authenticate"
+	loggerServiceUrl = "http://logger-service/log"
 )
