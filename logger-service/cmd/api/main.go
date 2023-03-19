@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"net/rpc"
 	"time"
 
 	"github.com/celso-patiri/go-micro/logger/data"
@@ -55,6 +57,14 @@ func main() {
 		Models: data.New(client),
 	}
 
+	// register rpc server
+	err = rpc.Register(new(RPCServer))
+	if err != nil {
+		log.Println("Failed to register RPC Server")
+	}
+	// start rpc server
+	go app.rpcListen()
+
 	// start web server
 	app.Serve()
 }
@@ -68,6 +78,24 @@ func (app *Config) Serve() {
 	err := srv.ListenAndServe()
 	if err != nil {
 		log.Panic(err)
+	}
+}
+
+func (app *Config) rpcListen() error {
+	log.Println("Starting RPC server on port ", rpcPort)
+
+	listen, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%s", rpcPort))
+	if err != nil {
+		return err
+	}
+	defer listen.Close()
+
+	for {
+		rpcConn, err := listen.Accept()
+		if err != nil {
+			continue
+		}
+		go rpc.ServeConn(rpcConn)
 	}
 }
 

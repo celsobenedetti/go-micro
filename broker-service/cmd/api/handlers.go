@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/rpc"
 
 	"github.com/celso-patiri/go-micro/broker/event"
 	"github.com/celso-patiri/go-micro/helpers"
@@ -36,6 +37,11 @@ type MailPayload struct {
 	Message string `json:"message"`
 }
 
+type RPCPayload struct {
+	Name string
+	Data string
+}
+
 func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
 	tools := helpers.Tools{}
 
@@ -60,7 +66,8 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	case "auth":
 		app.authenticate(w, RequestPayload.Auth)
 	case "log":
-		app.logEventViaRabbit(w, RequestPayload.Log)
+		// app.logEventViaRabbit(w, RequestPayload.Log)
+		app.LogItemViaRPC(w, RequestPayload.Log)
 	case "mail":
 		app.sendMail(w, RequestPayload.Mail)
 	default:
@@ -222,7 +229,35 @@ func (app *Config) pushToQueue(name, msg string) error {
 	return nil
 }
 
+func (app *Config) LogItemViaRPC(w http.ResponseWriter, payload LogPayload) {
+	client, err := rpc.Dial("tcp", loggerServeRPC)
+	if err != nil {
+		tools.ErrorJSON(w, err)
+		return
+	}
+
+	rpcPayload := RPCPayload{
+		Name: payload.Name,
+		Data: payload.Data,
+	}
+
+	var result string
+	err = client.Call("RPCServer.LogInfo", rpcPayload, &result)
+	if err != nil {
+		tools.ErrorJSON(w, err)
+		return
+	}
+
+	jsonPayload := helpers.JSONResponse{
+		Error:   false,
+		Message: result,
+	}
+
+	tools.WriteJSON(w, http.StatusAccepted, jsonPayload)
+}
+
 const (
 	authenticateUrl  = "http://authentication-service/authenticate"
 	loggerServiceUrl = "http://logger-service/log"
+	loggerServeRPC   = "logger-service:5001"
 )
