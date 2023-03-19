@@ -2,13 +2,18 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"net/rpc"
+	"time"
 
 	"github.com/celso-patiri/go-micro/broker/event"
+	"github.com/celso-patiri/go-micro/broker/logs"
 	"github.com/celso-patiri/go-micro/helpers"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var tools = helpers.Tools{}
@@ -230,7 +235,7 @@ func (app *Config) pushToQueue(name, msg string) error {
 }
 
 func (app *Config) LogItemViaRPC(w http.ResponseWriter, payload LogPayload) {
-	client, err := rpc.Dial("tcp", loggerServeRPC)
+	client, err := rpc.Dial("tcp", loggerServerRPC)
 	if err != nil {
 		tools.ErrorJSON(w, err)
 		return
@@ -256,8 +261,52 @@ func (app *Config) LogItemViaRPC(w http.ResponseWriter, payload LogPayload) {
 	tools.WriteJSON(w, http.StatusAccepted, jsonPayload)
 }
 
+func (app *Config) LogViaGRPC(w http.ResponseWriter, r *http.Request) {
+	var requestPayload RequestPayload
+
+	err := tools.ReadJSON(w, r, &requestPayload)
+	if err != nil {
+		tools.ErrorJSON(w, err)
+		return
+	}
+
+	conn, err := grpc.Dial(
+		loggerServerGRPC,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(),
+	)
+	if err != nil {
+		tools.ErrorJSON(w, err)
+		return
+	}
+	defer conn.Close()
+
+	client := logs.NewLogServiceClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	_, err = client.WriteLog(ctx, &logs.LogRequest{
+		LogEntry: &logs.Log{
+			Name: requestPayload.Log.Name,
+			Data: requestPayload.Log.Data,
+		},
+	})
+
+	if err != nil {
+		tools.ErrorJSON(w, err)
+		return
+	}
+
+	var payload helpers.JSONResponse
+	payload.Error = false
+	payload.Message = "Logged with gRPC"
+
+	tools.WriteJSON(w, http.StatusAccepted, payload)
+}
+
 const (
 	authenticateUrl  = "http://authentication-service/authenticate"
 	loggerServiceUrl = "http://logger-service/log"
-	loggerServeRPC   = "logger-service:5001"
+	loggerServerRPC  = "logger-service:5001"
+	loggerServerGRPC = "logger-service:50001"
 )
