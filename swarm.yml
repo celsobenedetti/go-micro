@@ -1,0 +1,91 @@
+version: "3"
+services:
+  front-end:
+    image: celsobenedetti2/micro-front:1.0.1
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  broker-service:
+    image: celsobenedetti2/broker-service:1.0.1
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  listener-service:
+    image: celsobenedetti2/listener-service:1.0.0
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  authentication-service:
+    image: celsobenedetti2/auth-service:1.0.0
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      DSN: "host=postgres port=5432 user=postgres password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
+
+  logger-service:
+    image: celsobenedetti2/logger-service:1.0.0
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  mail-service:
+    image: celsobenedetti2/mail-service:1.0.0
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      MAIL_DOMAIN: "localhost"
+      MAIL_HOST: "mailhog"
+      MAIL_PORT: "1025"
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_ENCRYPTION: "none"
+      FROM_NAME: "John Smith"
+      FROM_ADDRESS: "john.smith@email.com"
+
+  rabbitmq:
+    image: rabbitmq:3.9.14-management-alpine
+    deploy:
+      mode: global #only one instance
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "8025:8025"
+    deploy:
+      mode: global #only one instance
+
+  mongo:
+    image: mongo:4.2.16-bionic
+    ports:
+      - "27017:27017"
+    deploy:
+      mode: global #only one instance
+    environment:
+      MONGO_INITDB_DATABASE: logs
+      MONGO_INITDB_ROOT_USERNAME: admin # TODO: get credentails from env
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - micro-swarm-mongo:/var/lib/postgresql/data/
+
+  postgres:
+    image: postgres:14.2
+    ports:
+      - "5432:5432"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: users
+    volumes:
+      - micro-swarm-postgres:/var/lib/postgresql/data/
+
+volumes:
+  micro-swarm-mongo:
+  micro-swarm-postgres:
