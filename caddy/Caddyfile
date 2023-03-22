@@ -24,12 +24,14 @@
 }
 
 localhost:80 {
-    encode zstd gzip
-    import static
+    handle_path /api* {
+        reverse_proxy http://broker-service:8080
+    }
 
-    reverse_proxy http://front-end:8082
-}
+    handle {
+        encode zstd gzip
+        import static
 
-backend:80 {
-    reverse_proxy http://broker-service:8080
+        reverse_proxy http://front-end:8082
+    }
 }

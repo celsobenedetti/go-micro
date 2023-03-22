@@ -1,10 +1,24 @@
 version: "3"
 services:
-  front-end:
-    image: celsobenedetti2/micro-front:1.0.1
+  caddy:
+    image: celsobenedetti2/micro-caddy:1.0.0
     deploy:
       mode: replicated
       replicas: 1
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - caddy_data:/data
+      - cady_config:/config
+
+  front-end:
+    image: celsobenedetti2/micro-front:1.0.4
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      BROKER_URL: "http://localhost/api"
 
   broker-service:
     image: celsobenedetti2/broker-service:1.0.1
@@ -89,3 +103,6 @@ services:
 volumes:
   micro-swarm-mongo:
   micro-swarm-postgres:
+  caddy_data:
+    external: true
+  cady_config:

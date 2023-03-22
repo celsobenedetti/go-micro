@@ -6,13 +6,14 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 )
 
 const webPort = "8082"
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Println("Serving test page")
+		fmt.Println("Serving test page")
 		render(w, "test.page.gohtml")
 	})
 
@@ -46,7 +47,14 @@ func render(w http.ResponseWriter, t string) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	if err := tmpl.Execute(w, nil); err != nil {
+	var data struct {
+		BrokerURL string
+	}
+
+    // get services host url from env
+	data.BrokerURL = os.Getenv("BROKER_URL")
+
+	if err := tmpl.Execute(w, data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
