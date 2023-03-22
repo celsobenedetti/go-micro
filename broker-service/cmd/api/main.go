@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	webPort          = "80"
+	webPort          = "8080"
 	rabbitmqMaxTries = 5
 )
 
@@ -21,7 +21,7 @@ type Config struct {
 }
 
 func main() {
-	// try to connet to RabbitMQ
+	// try to connect to RabbitMQ
 	rabbitConn, err := connect()
 	if err != nil {
 		log.Println(err)
