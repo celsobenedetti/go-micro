@@ -1,0 +1,38 @@
+{
+    email you@gmail.com
+}
+
+(static) {
+    @static {
+        file
+        path *.ico *.css *.js *.gif *.jpeg *.png *.svg *.json
+    }
+    header @static Cache-Control max-age=5184000
+}
+
+(security) {
+    header {
+        # enable HSTS
+        Strict-Transport-Security max-age=31536000;
+
+        # disable clients from sniffing the media type
+        X-Content-Type-Options nosniff
+
+        # keep refferer data off on HTTP connections
+        Referrer-Policy no-referrer-when-downgrade
+        }
+}
+
+# node 1
+170.187.153.24:80 {
+    handle_path /api* {
+        reverse_proxy http://broker-service:8080
+    }
+
+    handle {
+        encode zstd gzip
+        import static
+
+        reverse_proxy http://front-end:8082
+    }
+}
