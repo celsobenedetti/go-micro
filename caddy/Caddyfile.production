@@ -24,7 +24,7 @@
 }
 
 # node 1
-170.187.153.24:80 {
+170.187.153.24 {
     handle_path /api* {
         reverse_proxy http://broker-service:8080
     }
@@ -32,6 +32,7 @@
     handle {
         encode zstd gzip
         import static
+        import security
 
         reverse_proxy http://front-end:8082
     }

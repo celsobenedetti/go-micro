@@ -1,7 +1,7 @@
 version: "3"
 services:
   caddy:
-    image: celsobenedetti2/micro-caddy-prod:1.0.0
+    image: celsobenedetti2/micro-caddy-prod:1.0.1
     deploy:
       mode: replicated
       replicas: 1
@@ -18,7 +18,7 @@ services:
       mode: replicated
       replicas: 1
     environment:
-      BROKER_URL: "http://localhost/api"
+      BROKER_URL: "https://localhost/api"
 
   broker-service:
     image: celsobenedetti2/broker-service:1.0.1
